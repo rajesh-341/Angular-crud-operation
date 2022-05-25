@@ -1,0 +1,128 @@
+<h1 mat-dialog-title>Employee Form</h1>
+<div mat-dialog-component>
+    <form [formGroup]="eForm">
+        <mat-form-field appearance="legacy">
+            <mat-label>Name</mat-label>
+            <input formControlName="eName" matInput placeholder="name...">
+            <mat-icon matSuffix>supervised_user_circle</mat-icon>
+          </mat-form-field>
+          <mat-form-field appearance="legacy">
+            <mat-label>Email Address</mat-label>
+            <input formControlName="email" matInput placeholder="email...">
+          </mat-form-field>
+          <mat-form-field appearance="legacy">
+            <mat-label>Phone Number</mat-label>
+            <input formControlName="phone" matInput placeholder="phone...">
+          </mat-form-field>
+          <label><h2>Martial Status</h2></label>
+          <mat-radio-group formControlName="martial">
+              <mat-radio-button *ngFor="let martial of martialStatus" [value]="martial">{{martial}}</mat-radio-button>
+          </mat-radio-group>
+          <mat-form-field appearance="legacy">
+            <mat-label>Position</mat-label>
+            <mat-select formControlName="position" placeholder="Position">
+                <mat-option value="UI Developer">UI Developer</mat-option>
+                <mat-option value="Q/A Tester">Q/A Tester</mat-option>
+                <mat-option value="Scrum Master">Scrum Master</mat-option>
+                <mat-option value="UX Developer">UX Developer</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="legacy">
+            <mat-label>Date of Birth</mat-label>
+            <input formControlName="dob" matInput [matDatepicker]="picker">
+            <mat-hint>MM/DD/YYYY</mat-hint>
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+          <mat-form-field appearance="legacy">
+            <mat-label>Date of Joining</mat-label>
+            <input formControlName="jDate" matInput [matDatepicker]="other">
+            <mat-hint>MM/DD/YYYY</mat-hint>
+            <mat-datepicker-toggle matSuffix [for]="other"></mat-datepicker-toggle>
+            <mat-datepicker #other></mat-datepicker>
+          </mat-form-field>
+    </form>
+</div>
+<div mat-dialog-action [align]="'end'">
+    <button mat-stroked-button color="accent" mat-dialog-close>Close</button>
+    <button mat-stroked-button color="accent" style="margin-left: 6px;" (click)="addE()">{{action}}</button>
+</div>
+
+
+
+mat-form-field{
+    width: 100%;
+}
+
+
+
+
+
+import { Component, OnInit, Inject } from '@angular/core';
+import {FormGroup, FormBuilder, Validators} from '@angular/forms';
+import {EListService} from '../service/e-list.service';
+import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog'
+
+@Component({
+  selector: 'app-dialogue-box',
+  templateUrl: './dialogue-box.component.html',
+  styleUrls: ['./dialogue-box.component.scss']
+})
+export class DialogueBoxComponent implements OnInit {
+
+  martialStatus=["Married","Un-Married"]
+  eForm!: FormGroup;
+  action: string = "submit"; 
+  constructor(private build: FormBuilder, private eService: EListService, @Inject(MAT_DIALOG_DATA) public edit: any, private ref: MatDialogRef<DialogueBoxComponent>,) { }
+
+  ngOnInit(): void {
+    this.eForm = this.build.group({
+      eName : ['',Validators.required],
+      email : ['',Validators.required],
+      phone : ['',Validators.required],
+      martial: ['',Validators.required],
+      position : ['',Validators.required],
+      dob: ['',Validators.required],
+      jDate: ['',Validators.required]
+    })
+if(this.edit){
+  this.action = 'update';
+  this.eForm.controls['eName'].setValue(this.edit.eName);
+  this.eForm.controls['email'].setValue(this.edit.email);
+  this.eForm.controls['phone'].setValue(this.edit.phone);
+  this.eForm.controls['martial'].setValue(this.edit.martial);
+  this.eForm.controls['position'].setValue(this.edit.position);
+  this.eForm.controls['dob'].setValue(this.edit.dob);
+  this.eForm.controls['jDate'].setValue(this.edit.jDate);
+}
+
+  }
+  addE(){
+    if(this.edit){
+      if(this.eForm.valid){
+        this.eService.addEmployee(this.eForm.value).subscribe({
+          next:(res)=>{
+            alert("Product added");
+            this.eForm.reset();
+            this.ref.close('submit')
+          }
+        })
+      }
+      else
+      {
+        this.updateList();
+      }
+    }
+  }
+  updateList(){
+    this.eService.updateEmployee(this.eForm.value, this.edit.id).subscribe({next:(res)=>{
+      alert("updated Successfully");
+      this.eForm.reset();
+      this.ref.close('update');
+    },
+    error:()=>{
+      alert("Error occuring")
+    }
+    })
+  }
+}
