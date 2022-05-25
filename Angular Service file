@@ -1,0 +1,44 @@
+import { TestBed } from '@angular/core/testing';
+
+import { EListService } from './e-list.service';
+
+describe('EListService', () => {
+  let service: EListService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(EListService);
+  });
+
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
+});
+
+
+import { HttpClient} from '@angular/common/http';
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class EListService {
+
+  constructor(private connect: HttpClient) { }
+
+addEmployee(data:any){
+  return this.connect.post<any>("http://localhost:3000/employeesList/",data);
+}
+
+getEmployee(){
+  return this.connect.get<any>("http://localhost:3000/employeesList/")
+}
+
+updateEmployee(data:any,id:number){
+  return this.connect.put<any>("http://localhost:3000/employeesList/"+id, data)
+}
+
+deleteEmployee(id:number){
+  return this.connect.delete<any>("http://localhost:3000/employeesList/"+id);
+}
+}
